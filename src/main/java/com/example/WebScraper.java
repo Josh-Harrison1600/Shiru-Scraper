@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
+import java.io.PrintWriter;
+
 
 public class WebScraper {
 
@@ -82,9 +84,21 @@ public class WebScraper {
                     String description = bookDoc.select("p.stText").text(); // Update with correct selector
 
                     // Debugging print statements
-                    System.out.println("Fetched Book URL: " + new String(bookUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
-                    System.out.println("Fetched Title: " + new String(title.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
-                    System.out.println("Fetched Description: " + new String(description.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+                    System.out.println("Fetched Book URL: " + bookUrl);
+                    System.out.println("Fetched Title: " + title);
+                    System.out.println("Fetched Description: " + description);                    
+
+                    // Write the fetched data to an output file
+                    //Comment this out if the kana is working in your terminal, this gives the same output as the terminal but in a .txt file
+                    try (PrintWriter writer = new PrintWriter(new FileWriter("output.txt", StandardCharsets.UTF_8, true))) {
+                        writer.println("Fetched Book URL: " + bookUrl);
+                        writer.println("Fetched Title: " + title);
+                        writer.println("Fetched Description: " + description);
+                        writer.println(); //blank line for readability
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
 
                     // Determine the JLPT level based on the description
                     String jlptLevel = determineJLPTLevel(description);
