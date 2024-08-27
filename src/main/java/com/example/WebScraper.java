@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
 import java.io.PrintWriter;
+import java.util.regex.Pattern;
 
 
 public class WebScraper {
@@ -83,6 +84,9 @@ public class WebScraper {
                     String title = bookDoc.select("h1.stTitle").text(); // Update with correct selector
                     String description = bookDoc.select("p.stText").text(); // Update with correct selector
 
+                    //clean up the title in .json
+                    title = cleanTitle(title);
+
                     // Debugging print statements
                     System.out.println("Fetched Book URL: " + bookUrl);
                     System.out.println("Fetched Title: " + title);
@@ -132,6 +136,23 @@ public class WebScraper {
         }
     }
 
+    //function to clean up the title in .json
+    private static String cleanTitle(String title) {
+        //patterns to remove
+        String[] patterns = {
+            "新着", // "New Arrival"
+            "【.*?】", // Removes text within brackets, such as "【電子書籍限定書き下ろしSS付き】"
+            "\\(.*?\\)" // Removes text within parentheses
+        };
+
+        //remove each pattern
+        for (String pattern : patterns) {
+            title = title.replaceAll(pattern, "").trim();
+        }
+
+        return title;
+    }
+
     // Load vocabulary from file into the provided set
     private static void loadVocabulary(String fileName, Set<String> vocabulary) {
         try {
@@ -152,25 +173,24 @@ public class WebScraper {
 
     // Function to determine JLPT level based on description
     private static String determineJLPTLevel(String description) {
-        int n5score = countMatchingWords(description, N5_VOCAB);
-        int n4score = countMatchingWords(description, N4_VOCAB);
-        int n3score = countMatchingWords(description, N3_VOCAB);
-        int n2score = countMatchingWords(description, N2_VOCAB);
-        int n1score = countMatchingWords(description, N1_VOCAB);
 
-        //HashMap initialization to determine score
-        Map<String, Integer> scores = new HashMap<>();
-        scores.put("N5", n5score);
-        scores.put("N4", n4score);
-        scores.put("N3", n3score);
-        scores.put("N2", n2score);
-        scores.put("N1", n1score);
+        //map of JLPT levels and their vocab sets
+        Map<String, Set<String>> jlptLevels = new LinkedHashMap<>();
+        jlptLevels.put("N1", N1_VOCAB);
+        jlptLevels.put("N2", N2_VOCAB);
+        jlptLevels.put("N3", N3_VOCAB);
+        jlptLevels.put("N4", N4_VOCAB);
+        jlptLevels.put("N5", N5_VOCAB);
 
-        return scores.entrySet().stream()
-            .max(Map.Entry.comparingByValue())
-            .filter(entry -> entry.getValue() > 0) // Ensure there's at least one match
-            .map(Map.Entry::getKey)
-            .orElse(null); // Return the highest scoring level or null if no matches
+        //iterate over the levels and return the first level that matches
+        for(Map.Entry<String, Set<String>> entry : jlptLevels.entrySet()) {
+            if(countMatchingWords(description, entry.getValue()) > 0) {
+                return entry.getKey();
+            }
+        }
+
+        //if no matches are found
+        return null;
     }
 
     // Helper function to count matching words from a set
