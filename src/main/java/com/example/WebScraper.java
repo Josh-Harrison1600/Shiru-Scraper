@@ -75,15 +75,16 @@ public class WebScraper {
                 try {
                     // Navigate to the book's detail page
                     Document bookDoc = Jsoup.connect(bookUrl).get();
+                    bookDoc.outputSettings().charset("UTF-8");
 
                     // Extract the title and description from the detail page
                     String title = bookDoc.select("h1.stTitle").text(); // Update with correct selector
                     String description = bookDoc.select("p.stText").text(); // Update with correct selector
 
                     // Debugging print statements
-                    System.out.println("Fetched Book URL: " + bookUrl);
-                    System.out.println("Fetched Title: " + title);
-                    System.out.println("Fetched Description: " + description);
+                    System.out.println("Fetched Book URL: " + new String(bookUrl.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+                    System.out.println("Fetched Title: " + new String(title.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+                    System.out.println("Fetched Description: " + new String(description.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
 
                     // Determine the JLPT level based on the description
                     String jlptLevel = determineJLPTLevel(description);
@@ -128,7 +129,7 @@ public class WebScraper {
             }
 
             // Read all lines from the file
-            List<String> lines = Files.readAllLines(filePath);
+            List<String> lines = Files.readAllLines(filePath, StandardCharsets.UTF_8);
             vocabulary.addAll(lines);
         } catch (IOException e) {
             System.out.println("Error reading vocabulary file: " + fileName + " - " + e.getMessage());
