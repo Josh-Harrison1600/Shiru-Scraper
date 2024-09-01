@@ -13,54 +13,46 @@ const BookList: React.FC = () => {
 
     useEffect(() => {
         //fetch json data from the file
-        fetch('../books_by_jlpt.json')
+        fetch('http://localhost:8080/api/books')
             .then(response => response.json())
             .then(data => {
-                //change json structure into array of books
-                const allBooks = Object.keys(data).flatMap(level => 
+                const allBooks = Object.keys(data).flatMap(level =>
                     data[level].map((title: string) => ({ title, level }))
                 );
                 setBooks(allBooks);
                 setFilteredBooks(allBooks);
             })
-            .catch(error => console.error('Error laoding the book data: ', error));
+            .catch(error => console.error("Error loading the book data: ", error));
     }, []);
 
-    //update the filtered books whenever the filter changes
-    useEffect(() => {
-        if(filter === 'All') {
-            setFilteredBooks(books);
-        }else{
-            setFilteredBooks(books.filter(book => book.level === filter));
-        }
-    }, [filter, books]);
+  // Update the filtered books whenever the filter changes
+  useEffect(() => {
+    setFilteredBooks(books.filter(book => book.level === filter));
+  }, [filter, books]);
 
     return (
         <div className='container mx-auto p-4'>
-            <h1 className='text-2xl font-bold mb-4'>Manga Books by JLPT</h1>
+            <h1 className='text-2xl font-bold mb-4'>Shiru</h1>
             <div className='mb-4'>
-                <label htmlFor='filter' className='mr-2'>Filter by JLPT Level:</label>
-                <select
-                    id='filter'
-                    className='p-2 border'
-                    value={filter}
-                    onChange={e => setFilter(e.target.value)}
-                >
-                    <option value="All">All</option>
-                    <option value="N5">N5</option>
-                    <option value="N4">N4</option>
-                    <option value="N3">N3</option>
-                    <option value="N2">N2</option>
-                    <option value="N1">N1</option>
-                </select>
-            </div>
-            <ul className='list-disc pl-5'>
-                {filteredBooks.map((book, index) => (
-                    <li key={index}>{book.title} ({book.level})</li>
+                {['N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
+                    <button
+                        key={level}
+                        className={`p-2 border ${filter === level ? 'bg-blue-500 text-white' :'bg-white text-black'}`}
+                        onClick={() => setFilter(level)}
+                    >
+                        {level}
+                    </button>
                 ))}
-            </ul>
         </div>
-    )
+        <ul className='list-disc pl-5'>
+            {filteredBooks.map((book, index) => (
+                <li key={index}>
+                    {book.title} ({book.level})
+                </li>
+            ))}
+        </ul>
+    </div>
+    );
 };
 
 export default BookList;
