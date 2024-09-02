@@ -13,10 +13,6 @@ import java.util.*;
 import okhttp3.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
-//cmd to run
-//mvn clean compile exec:java -D"exec.mainClass=com.example.AniOnline" -D"exec.args=-Dfile.encoding=UTF-8"
-
-
 public class AniOnline {
 
     private static final Dotenv dotenv = Dotenv.configure().directory("../").load();
@@ -33,72 +29,93 @@ public class AniOnline {
         booksByJLPT.put("N2", new ArrayList<>());
         booksByJLPT.put("N1", new ArrayList<>());
 
-        // Base URL of the Animate Online Shop search results page
-        //String baseSearchResultsUrl = "https://www.animate-onlineshop.jp/products/index.php?spc=4&pageno=";
-
-        // Go through all pages
-        int totalPages = 4;
+        // Total pages to process
+        int totalPages = 4; //there is 19 pages total using 4 for testing currently
         for (int currentPage = 1; currentPage <= totalPages; currentPage++) {
             String searchResultsUrl = "https://www.animate-onlineshop.jp/products/index.php?spc=4&pageno=" + currentPage;
             System.out.println("Processing page: " + currentPage);
 
-            try {
-                // Fetch and parse the search results page
-                Document doc = Jsoup.connect(searchResultsUrl).get();
-                doc.outputSettings().charset("UTF-8");
+            boolean success = false;
+            int attempts = 0;
+            int maxAttempts = 5;
+            int timeout = 50000; // 60 seconds timeout
+            int backoffTime = 5000; //Initial 5 seconds backoff
 
-                // Select the book item elements containing the titles
-                Elements bookElements = doc.select("div.item_list ul li h3 a");
+            while (!success && attempts < maxAttempts) {
+                attempts++;
+                try {
+                    // Fetch and parse the search results page
+                    Document doc = Jsoup.connect(searchResultsUrl)
+                            .timeout(timeout)
+                            .get();
+                    doc.outputSettings().charset("UTF-8");
 
-                for (Element linkElement : bookElements) {
-                    // Extract URL and title directly from the linkElement
-                    String bookUrl = linkElement.attr("href");
-                    String title = linkElement.text();
+                    // Select the book item elements containing the titles
+                    Elements bookElements = doc.select("div.item_list ul li h3 a");
 
-                    // Check if the URL or title is not empty
-                    if (bookUrl == null || bookUrl.isEmpty()) {
-                        System.out.println("Book URL is empty. Skipping this entry.");
-                        continue; // Skip this iteration if the book URL is empty
+                    for (Element linkElement : bookElements) {
+                        // Extract URL and title directly from the linkElement
+                        String bookUrl = linkElement.attr("href");
+                        String title = linkElement.text();
+
+                        // Check if the URL or title is not empty
+                        if (bookUrl == null || bookUrl.isEmpty()) {
+                            System.out.println("Book URL is empty. Skipping this entry.");
+                            continue; // Skip this iteration if the book URL is empty
+                        }
+
+                        // Prepend the base URL if necessary
+                        if (!bookUrl.startsWith("http")) {
+                            bookUrl = "https://www.animate-onlineshop.jp" + bookUrl;
+                        }
+
+                        // Debugging print statements
+                        System.out.println("Fetched Book URL: " + bookUrl);
+                        System.out.println("Fetched Title: " + title);
+
+                        // Use OpenAI to determine JLPT level
+                        String jlptLevel = determineJLPTLevelUsingOpenAI(title);
+
+                        if (jlptLevel != null) {
+                            booksByJLPT.get(jlptLevel).add(title);
+                            // Save the result to file immediately after fetching
+                            saveResultsToFile(booksByJLPT);
+                        } else {
+                            System.out.println("Failed to determine JLPT level for title: " + title);
+                        }
+
+                        // Add delay between requests
+                        Thread.sleep(3000);
+
                     }
 
-                    // Prepend the base URL if necessary
-                    if (!bookUrl.startsWith("http")) {
-                        bookUrl = "https://www.animate-onlineshop.jp" + bookUrl;
-                    }
-
-                    // Debugging print statements
-                    System.out.println("Fetched Book URL: " + bookUrl);
-                    System.out.println("Fetched Title: " + title);
-
-                    // Use OpenAI to determine JLPT level
-                    String jlptLevel = determineJLPTLevelUsingOpenAI(title);
-
-                    if (jlptLevel != null) {
-                        booksByJLPT.get(jlptLevel).add(title);
-                        // Save the result to file immediately after fetching
-                        saveResultsToFile(booksByJLPT);
+                    success = true; // Successfully processed the page
+                } catch (IOException e) {
+                    System.out.println("Error fetching the website (attempt: " + attempts + "): " + e.getMessage());
+                    if (attempts >= maxAttempts) {
+                        System.out.println("Max attempts reached. Skipping page: " + currentPage);
                     } else {
-                        System.out.println("Failed to determine JLPT level for title: " + title);
+                        System.out.println("Retrying in " + backoffTime / 1000 + " seconds...");
+                        try {
+                            Thread.sleep(backoffTime);
+                            backoffTime *= 2; // Exponential backoff
+                        } catch (InterruptedException ie) {
+                            System.out.println("Error with thread sleep: " + ie.getMessage());
+                            Thread.currentThread().interrupt(); // Restore interrupted status
+                        }
                     }
-
-                    // Add delay between requests
-                    Thread.sleep(2000);
-
+                } catch (InterruptedException e) {
+                    System.out.println("Error with thread sleep: " + e.getMessage());
+                    Thread.currentThread().interrupt(); // Restore interrupted status
                 }
-            } catch (IOException e) {
-                System.out.println("Error fetching the website: " + e.getMessage());
-            } catch (InterruptedException e) {
-                System.out.println("Error with thread sleep: " + e.getMessage());
-                Thread.currentThread().interrupt(); // Restore interrupted status
             }
         }
     }
 
     // Function to get OpenAI to determine JLPT level
     private static String determineJLPTLevelUsingOpenAI(String title) {
-        // Define the prompt based on the title
         String prompt = "You are a language model that specializes in translating Japanese manga titles to their JLPT difficulty level. Determine its JLPT level. Only respond with one of the following levels: 'N5', 'N4', 'N3', 'N2', 'N1'. Ignore text that isn't related to the title. Here is the title: " + title;
-        
+
         try {
             String response = callOpenAIAPI(prompt);
             if (response != null && response.contains("N")) {
@@ -120,11 +137,11 @@ public class AniOnline {
         requestBody.put("messages", Collections.singletonList(new JSONObject().put("role", "user").put("content", prompt)));
 
         Request request = new Request.Builder()
-            .url(url)
-            .post(RequestBody.create(requestBody.toString(), JSON))
-            .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-            .addHeader("Content-Type", "application/json")
-            .build();
+                .url(url)
+                .post(RequestBody.create(requestBody.toString(), JSON))
+                .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
+                .addHeader("Content-Type", "application/json")
+                .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
