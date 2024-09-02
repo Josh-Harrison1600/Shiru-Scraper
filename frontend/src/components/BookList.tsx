@@ -8,11 +8,12 @@ interface Book{
 
 const BookList: React.FC = () => { 
     const [books, setBooks] = useState<Book[]>([]);
+    const [aniBooks, setAniBooks] = useState<Book[]>([]);
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
     const [filter, setFilter] = useState<string>('All');
 
     useEffect(() => {
-        //fetch json data from the file
+        //fetch json data from honto file
         fetch('http://localhost:8080/api/books')
             .then(response => response.json())
             .then(data => {
@@ -23,12 +24,28 @@ const BookList: React.FC = () => {
                 setFilteredBooks(allBooks);
             })
             .catch(error => console.error("Error loading the book data: ", error));
-    }, []);
+
+        //fetch json data from anionline file
+        fetch('http://localhost:8080/api/ani-books')
+        .then(response => response.json())
+        .then(data => {
+            const allAniBooks = Object.keys(data).flatMap(level =>
+                data[level].map((title: string) => ({ title, level }))
+            );
+            setAniBooks(allAniBooks);
+        })
+        .catch(error => console.error("Error loading the Ani books data: ", error));
+
+        }, []);
+
 
   // Update the filtered books whenever the filter changes
   useEffect(() => {
-    setFilteredBooks(books.filter(book => book.level === filter));
-  }, [filter, books]);
+    const allFilteredBooks = books.concat(aniBooks);
+    setFilteredBooks(
+        filter === 'All' ? allFilteredBooks : allFilteredBooks.filter(book => book.level === filter)
+    );
+  }, [filter, books, aniBooks]);
 
     return (
         <div className='container mx-auto p-4'>

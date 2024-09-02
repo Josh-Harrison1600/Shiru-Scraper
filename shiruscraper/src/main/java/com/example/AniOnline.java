@@ -13,11 +13,11 @@ import java.util.*;
 import okhttp3.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
+//cmd to run
+//mvn clean compile exec:java -D"exec.mainClass=com.example.AniOnline" -D"exec.args=-Dfile.encoding=UTF-8"
 
-//cmd to run scraper
-//mvn clean compile exec:java -D"exec.mainClass=com.example.WebScraper" -D"exec.args=-Dfile.encoding=UTF-8"
 
-public class WebScraper {
+public class AniOnline {
 
     private static final Dotenv dotenv = Dotenv.configure().directory("../").load();
     private static final OkHttpClient client = new OkHttpClient();
@@ -33,34 +33,29 @@ public class WebScraper {
         booksByJLPT.put("N2", new ArrayList<>());
         booksByJLPT.put("N1", new ArrayList<>());
 
-        // Base URL of the Honto.jp search results page
-        String baseSearchResultsUrl = "https://honto.jp/ebook/search_0750_0229001000000_09-salesnum.html?slm=5&tbty=2&unt=0&cid=ip_eb_alpk_new_04";
+        // Base URL of the Animate Online Shop search results page
+        //String baseSearchResultsUrl = "https://www.animate-onlineshop.jp/products/index.php?spc=4&pageno=";
 
         // Go through all pages
         int totalPages = 4;
         for (int currentPage = 1; currentPage <= totalPages; currentPage++) {
-            String searchResultsUrl = baseSearchResultsUrl + "&pgno=" + currentPage;
+            String searchResultsUrl = "https://www.animate-onlineshop.jp/products/index.php?spc=4&pageno=" + currentPage;
             System.out.println("Processing page: " + currentPage);
-
-            // Ensure URL is not empty
-            if (searchResultsUrl == null || searchResultsUrl.isEmpty()) {
-                System.out.println("The 'url' parameter must not be empty.");
-                return; // Exit if the URL is invalid
-            }
 
             try {
                 // Fetch and parse the search results page
                 Document doc = Jsoup.connect(searchResultsUrl).get();
                 doc.outputSettings().charset("UTF-8");
 
-                // Select the book item elements
-                Elements bookElements = doc.select(".stProduct02");
+                // Select the book item elements containing the titles
+                Elements bookElements = doc.select("div.item_list ul li h3 a");
 
-                for (Element bookElement : bookElements) {
-                    // Extract URL of the book's details page
-                    String bookUrl = bookElement.select("a.dyTitle").attr("href");
+                for (Element linkElement : bookElements) {
+                    // Extract URL and title directly from the linkElement
+                    String bookUrl = linkElement.attr("href");
+                    String title = linkElement.text();
 
-                    // Check if the URL is not empty
+                    // Check if the URL or title is not empty
                     if (bookUrl == null || bookUrl.isEmpty()) {
                         System.out.println("Book URL is empty. Skipping this entry.");
                         continue; // Skip this iteration if the book URL is empty
@@ -68,44 +63,33 @@ public class WebScraper {
 
                     // Prepend the base URL if necessary
                     if (!bookUrl.startsWith("http")) {
-                        bookUrl = "https://honto.jp" + bookUrl;
+                        bookUrl = "https://www.animate-onlineshop.jp" + bookUrl;
                     }
 
-                    try {
-                        // Navigate to the book's detail page
-                        Document bookDoc = Jsoup.connect(bookUrl).get();
-                        bookDoc.outputSettings().charset("UTF-8");
+                    // Debugging print statements
+                    System.out.println("Fetched Book URL: " + bookUrl);
+                    System.out.println("Fetched Title: " + title);
 
-                        // Extract the title from the detail page
-                        String title = bookDoc.select("h1.stTitle").text();
+                    // Use OpenAI to determine JLPT level
+                    String jlptLevel = determineJLPTLevelUsingOpenAI(title);
 
-                        // Debugging print statements
-                        System.out.println("Fetched Book URL: " + bookUrl);
-                        System.out.println("Fetched Title: " + title);
-
-                        // Use OpenAI to determine JLPT level
-                        String jlptLevel = determineJLPTLevelUsingOpenAI(title);
-
-                        if (jlptLevel != null) {
-                            booksByJLPT.get(jlptLevel).add(title);
-                            // Save the result to file immediately after fetching
-                            saveResultsToFile(booksByJLPT);
-                        } else {
-                            System.out.println("Failed to determine JLPT level for title: " + title);
-                        }
-
-                        // Add delay between requests
-                        Thread.sleep(2000);
-
-                    } catch (IOException e) {
-                        System.out.println("Error fetching the book detail page: " + e.getMessage());
-                    } catch (InterruptedException e) {
-                        System.out.println("Error with thread sleep: " + e.getMessage());
-                        Thread.currentThread().interrupt(); // Restore interrupted status
+                    if (jlptLevel != null) {
+                        booksByJLPT.get(jlptLevel).add(title);
+                        // Save the result to file immediately after fetching
+                        saveResultsToFile(booksByJLPT);
+                    } else {
+                        System.out.println("Failed to determine JLPT level for title: " + title);
                     }
+
+                    // Add delay between requests
+                    Thread.sleep(2000);
+
                 }
             } catch (IOException e) {
                 System.out.println("Error fetching the website: " + e.getMessage());
+            } catch (InterruptedException e) {
+                System.out.println("Error with thread sleep: " + e.getMessage());
+                Thread.currentThread().interrupt(); // Restore interrupted status
             }
         }
     }
@@ -113,7 +97,7 @@ public class WebScraper {
     // Function to get OpenAI to determine JLPT level
     private static String determineJLPTLevelUsingOpenAI(String title) {
         // Define the prompt based on the title
-        String prompt = "You are a language model that specializes in translating Japanese manga titles to their JLPT difficulty level. determine its JLPT level. Only respond with one of the following levels: 'N5', 'N4', 'N3', 'N2', 'N1'. Ensure you ignore text that isn't related to the title such as 【電子書籍限定書き下ろしSS付き】Here is the title: " + title;
+        String prompt = "You are a language model that specializes in translating Japanese manga titles to their JLPT difficulty level. Determine its JLPT level. Only respond with one of the following levels: 'N5', 'N4', 'N3', 'N2', 'N1'. Ignore text that isn't related to the title. Here is the title: " + title;
         
         try {
             String response = callOpenAIAPI(prompt);
@@ -139,7 +123,7 @@ public class WebScraper {
             .url(url)
             .post(RequestBody.create(requestBody.toString(), JSON))
             .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-            .addHeader("Content-Type", "application/json") // Added Content-Type header
+            .addHeader("Content-Type", "application/json")
             .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -158,9 +142,9 @@ public class WebScraper {
     private static void saveResultsToFile(Map<String, List<String>> booksByJLPT) {
         JSONObject jsonObject = new JSONObject(booksByJLPT);
 
-        try (FileWriter file = new FileWriter("books_by_jlpt.json", StandardCharsets.UTF_8, false)) {
+        try (FileWriter file = new FileWriter("Ani_Online_Books.json", StandardCharsets.UTF_8, false)) {
             file.write(jsonObject.toString(4));
-            System.out.println("Results saved to books_by_jlpt.json");
+            System.out.println("Results saved to Ani_Online_Books.json");
         } catch (IOException e) {
             System.out.println("Error writing to JSON file: " + e.getMessage());
         }

@@ -129,12 +129,37 @@
       </plugin>
       <!-- exec-maven-plugin -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <mainClass>com.example.WebScraper</mainClass>
-        </configuration>
+                   <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <!-- Execution for WebScraper -->
+                <!-- <execution>
+                    <id>run-web-scraper</id>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>com.example.WebScraper</mainClass>
+                        <arguments>
+                            <argument>-Dfile.encoding=UTF-8</argument>
+                        </arguments>
+                    </configuration>
+                </execution> -->
+                <!-- Execution for RakutenScraper -->
+                <execution>
+                    <id>run-ani-scraper</id>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>com.example.AniOnline</mainClass>
+                        <arguments>
+                            <argument>-Dfile.encoding=UTF-8</argument>
+                        </arguments>
+                    </configuration>
+                </execution>
+            </executions>
       </plugin>
     </plugins>
   </build>
