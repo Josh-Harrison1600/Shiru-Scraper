@@ -49,7 +49,6 @@ const BookList: React.FC = () => {
 
     return (
         <div className='container mx-auto p-4'>
-            <h1 className='text-2xl font-bold mb-4'>Shiru</h1>
             <div className='mb-4'>
                 {['N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
                     <button

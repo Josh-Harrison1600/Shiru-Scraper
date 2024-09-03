@@ -20,7 +20,7 @@ export const About = () => {
                     <br></br>
                     I used this as my method of classifying difficulty as most Japanese learners are familiar with 
                     <br></br>
-                    JLPT and where their skill level is in accordance to them.
+                    JLPT exams and where their skill level is in relation to them.
                 </p>
 
             <h3 className="text-3xl font-roboto mt-10">Is Shiru Accurate?</h3>
