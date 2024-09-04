@@ -28,7 +28,7 @@ export const Contact = () => {
   return (
     <div className="py-10 flex justify-center items-start relative"> {/* Flex container */}
       <div className="flex flex-col max-w-lg w-full"> {/* Container for form, flex-col to stack form elements */}
-        <form ref={form} onSubmit={sendEmail} className="w-full text-gray-200" style={{ fontFamily: 'Roboto, sans-serif' }}> {/* Full-width form */}
+        <form ref={form} onSubmit={sendEmail} className="w-full text-gray-200 font-roboto">{/* Full-width form */}
           <label>Name</label>
           <input type="text" name="username" className="w-full mb-4 p-2 bg-gray-800 border-2 border-gray-500 rounded-lg focus:border-blue-500 focus:bg-gray-900 focus:outline-none" />
           <label>Email</label>
