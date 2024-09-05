@@ -60,7 +60,7 @@ const BookList: React.FC = () => {
                     </button>
                 ))}
         </div>
-        <ul className='list-disc pl-5'>
+        <ul className='list-disc pl-5 text-slate-100'>
             {filteredBooks.map((book, index) => (
                 <li key={index}>
                     {book.title} ({book.level})

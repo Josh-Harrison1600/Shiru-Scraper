@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
     return (
-        <nav className='bg-gray-800 p-6 relative'>
+        <nav className='bg-black p-6 relative'>
             <div className='container mx-auto flex items-center justify-end'>
                 {/* Centered Title */}
                 <div className='absolute left-1/2 transform -translate-x-1/2 text-white text-3xl font-bold font-roboto '>

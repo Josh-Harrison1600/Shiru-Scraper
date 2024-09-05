@@ -1,17 +1,47 @@
+import 'animate.css';
+import { useEffect, useRef } from 'react';
 
 export const About = () => {
+    const sectionRefs = useRef([]);
+
+    useEffect(() => {
+        //create intersection observer
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if(entry.isIntersecting) {
+                        //add animation class when section is in view
+                        entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    }
+                });
+            },
+            { threshold: 0.1 } 
+        );
+
+        //observe each section
+        sectionRefs.current.forEach((section) => {
+            if(section) observer.observe(section);
+        });
+
+        return () => {
+            //cleanup observer on component unmount
+            sectionRefs.current.forEach((section) => {
+                if (section) observer.unobserve(section);
+            });
+        };
+    }, []);
+
     return (
         <div className="flex flex-col items-center mt-16 text-gray-200 text-center font-roboto">
-
-            <h1 className="text-3xl font-roboto">What is Shiru?</h1>
-                <p className="mt-8">
+            <h1 className="text-3xl font-roboto" ref={(el) => sectionRefs.current[0] = el}>What is Shiru?</h1>
+                <p className="mt-8" ref={(el) => sectionRefs.current[1] = el}>
                     Shiru is a web app that scraps manga from certain websites and uses the OpenAI API to
                     <br></br>
                     determine the JLPT level associated with said manga!
                 </p>
             
-            <h2 className="text-3xl font-roboto mt-10">What is JLPT?</h2>
-            <p className="mt-8">
+            <h2 className="text-3xl font-roboto mt-10" ref={(el) => sectionRefs.current[2] = el}>What is JLPT?</h2>
+            <p className="mt-8" ref={(el) => sectionRefs.current[3] = el}>
                     The Japanese Language Proficiency Test (JLPT) is an exam issued by the Japan Foundation 
                     <br></br>
                     for learners of the language to assess their skills with vocabulary, grammar, listening 
@@ -23,8 +53,8 @@ export const About = () => {
                     JLPT exams and where their skill level is in relation to them.
                 </p>
 
-            <h3 className="text-3xl font-roboto mt-10">Is Shiru Accurate?</h3>
-            <p className="mt-8">
+            <h3 className="text-3xl font-roboto mt-10" ref={(el) => sectionRefs.current[4] = el}>Is Shiru Accurate?</h3>
+            <p className="mt-8" ref={(el) => sectionRefs.current[5] = el}>
                 Kinda...
                 <br></br>
                 This site uses the OpenAI API (ChatGPT) in order to determine the difficulty of these manga books so the 
