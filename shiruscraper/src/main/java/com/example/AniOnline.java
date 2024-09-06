@@ -21,8 +21,8 @@ public class AniOnline {
 
     public static void main(String[] args) {
 
-        // Create map to categorize books by JLPT level
-        Map<String, List<String>> booksByJLPT = new HashMap<>();
+        // Create map to store book details (title and image URL)
+        Map<String, List<Map<String, String>>> booksByJLPT = new HashMap<>();
         booksByJLPT.put("N5", new ArrayList<>());
         booksByJLPT.put("N4", new ArrayList<>());
         booksByJLPT.put("N3", new ArrayList<>());
@@ -50,35 +50,44 @@ public class AniOnline {
                             .get();
                     doc.outputSettings().charset("UTF-8");
 
-                    // Select the book item elements containing the titles
-                    Elements bookElements = doc.select("div.item_list ul li h3 a");
+                    // Select the book item elements containing the titles and images
+                    Elements bookElements = doc.select("div.item_list ul li");
 
-                    for (Element linkElement : bookElements) {
-                        // Extract URL and title directly from the linkElement
-                        String bookUrl = linkElement.attr("href");
-                        String title = linkElement.text();
+                    for (Element bookElement : bookElements) {
+                        // Extract title
+                        String title = bookElement.select("h3 a").text();
 
-                        // Check if the URL or title is not empty
-                        if (bookUrl == null || bookUrl.isEmpty()) {
-                            System.out.println("Book URL is empty. Skipping this entry.");
-                            continue; // Skip this iteration if the book URL is empty
+                        // Extract image URL
+                        String imageUrl = bookElement.select("div.item_list_thumb img").attr("src");
+
+                        // Skip if no title or image URL is found
+                        if (title.isEmpty() || imageUrl.isEmpty()) {
+                            System.out.println("Book title or image URL is empty. Skipping this entry.");
+                            continue;
                         }
 
                         // Prepend the base URL if necessary
-                        if (!bookUrl.startsWith("http")) {
-                            bookUrl = "https://www.animate-onlineshop.jp" + bookUrl;
+                        if (!imageUrl.startsWith("http")) {
+                            imageUrl = "https://www.animate-onlineshop.jp" + imageUrl;
                         }
 
                         // Debugging print statements
-                        System.out.println("Fetched Book URL: " + bookUrl);
                         System.out.println("Fetched Title: " + title);
+                        System.out.println("Fetched Image URL: " + imageUrl);
 
-                        // Use OpenAI to determine JLPT level
+                        // Use OpenAI to determine JLPT level (as before)
                         String jlptLevel = determineJLPTLevelUsingOpenAI(title);
 
                         if (jlptLevel != null) {
-                            booksByJLPT.get(jlptLevel).add(title);
-                            // Save the result to file immediately after fetching
+                            // Create a map to hold the book's title and image URL
+                            Map<String, String> bookData = new HashMap<>();
+                            bookData.put("title", title);
+                            bookData.put("imageUrl", imageUrl);
+
+                            // Add bookData to the corresponding JLPT level list
+                            booksByJLPT.get(jlptLevel).add(bookData);
+
+                            // Save the result to file after fetching each entry
                             saveResultsToFile(booksByJLPT);
                         } else {
                             System.out.println("Failed to determine JLPT level for title: " + title);
@@ -86,7 +95,6 @@ public class AniOnline {
 
                         // Add delay between requests
                         Thread.sleep(3000);
-
                     }
 
                     success = true; // Successfully processed the page
@@ -156,7 +164,7 @@ public class AniOnline {
     }
 
     // Function to save results to a file
-    private static void saveResultsToFile(Map<String, List<String>> booksByJLPT) {
+    private static void saveResultsToFile(Map<String, List<Map<String, String>>> booksByJLPT) {
         JSONObject jsonObject = new JSONObject(booksByJLPT);
 
         try (FileWriter file = new FileWriter("Ani_Online_Books.json", StandardCharsets.UTF_8, false)) {

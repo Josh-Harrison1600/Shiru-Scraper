@@ -1,30 +1,87 @@
 {
     "N1": [],
     "N2": [
-        "【グッズ-設定資料集】うたの☆プリンスさまっ♪ Shining Live Archive Book 1・2セット【アニメイト特典付】",
-        "【コミック】エンプレスエイジ ～闇社会の主役は我々だ!～(4) リールキーホルダー付き特装版",
-        "【グッズ-設定資料集】うたの☆プリンスさまっ♪ Shining Live Archive Book 3・4セット【アニメイト特典付】",
-        "【コミック】ハイキー×ローキー rose アニメイト限定セット【描き下ろし8P小冊子付き】",
-        "【コミック】薬屋のひとりごと(14) 小冊子付き特装版",
-        "【コミック】「くじ」から始まる婚約生活～厳正なる抽選の結果、笑わない次期公爵様の婚約者に当選しました～(5)",
-        "【コミック】悪虐聖女ですが、愛する旦那さまのお役に立ちたいです。(とはいえ、嫌われているのですが)(3)",
-        "【コミック】不純な純真"
+        {
+            "title": "【雑誌】花とゆめ 2024年9/20号【通販限定特典付き】",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=08301301_66d143fe6e7df.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】囀る鳥は羽ばたかない(9)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=&width=400&height=400&square=1"
+        },
+        {
+            "title": "【ムック】リスアニ!Presents「劇場版 うたの☆プリンスさまっ♪ マジLOVEスターリッシュツアーズ」OFFICIAL BOOK 完全数量限定セット【アクリルスタンド付き】",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】可哀想な君は僕だけの甘やかな傷(2) アニメイトセット【描き下ろし8P小冊子付き】",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=07311107_66a99c655ed75.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】バイトの宮川君は店長が好き",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784047380752.jpg&width=400&height=400&square=1"
+        }
     ],
     "N3": [
-        "【コミック】合コンに行ったら女がいなかった話(8)",
-        "【コミック】地雷系彼氏すずくん(3)",
-        "【コミック】白物語(1) アクリルスタンド付き特装版",
-        "【コミック】逃げ上手の若君(17)",
-        "【コミック】雅血の陰陽師(1)"
+        {
+            "title": "【その他(書籍)】WhiteTails おもくろい謎解き本",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784041146514.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】かわにさざなみ(5) アニメイトセット【描き下ろし小冊子付き】",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=08281250_66ce9e7690d3f.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】死に戻りの魔法学校生活を、元恋人とプロローグから(5) (\u203bただし好感度はゼロ)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784046839343.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】SUPER LOVERS(18) 小冊子付き特装版",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784041152003.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】外科医エリーゼ(13)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784046839404.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】黄泉のツガイ(8)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=07532355.JPG&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】水曜日先生「俺以外にはときめかないで」抽選WEBサイン会",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=08291224_66cfea0322f12.jpg&width=400&height=400&square=1"
+        }
     ],
     "N4": [
-        "【コミック】世界でいちばん遠い恋(2) アニメイト限定セット【描き下ろし12P小冊子付き】",
-        "【コミック】月刊少女野崎くん(16) アニメイト限定版【Wカバー仕様】",
-        "【コミック】メイドインアビス(13)"
+        {
+            "title": "【コミック】夏目友人帳(31)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784592222019.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】地雷系彼氏すずくん(3)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784801984509.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】好きなら脱がせて。",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784799768792.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】極楽街(4)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784088840420.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【コミック】逃げ上手の若君(17)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784088841687.jpg&width=400&height=400&square=1"
+        }
     ],
     "N5": [
-        "【コミック】SPY×FAMILY(14)",
-        "【コミック】ルリドラゴン(2)",
-        "【コミック】HUNTER×HUNTER(38)"
+        {
+            "title": "【コミック】SPY×FAMILY(14)",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=JPRO_9784088841540.jpg&width=400&height=400&square=1"
+        },
+        {
+            "title": "【雑誌】LaLa 2024年11月号【通販限定特典付き】",
+            "imageUrl": "https://tc-animate.techorus-cdn.com/resize_image/resize_image.php?image=&width=400&height=400&square=1"
+        }
     ]
 }

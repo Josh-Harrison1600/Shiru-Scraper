@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 interface Book{ 
     title: string;
     level: 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
+    imageUrl: string;
 }
 
 const BookList: React.FC = () => { 
@@ -30,13 +31,16 @@ const BookList: React.FC = () => {
         .then(response => response.json())
         .then(data => {
             const allAniBooks = Object.keys(data).flatMap(level =>
-                data[level].map((title: string) => ({ title, level }))
+                data[level].map((book: { title: string, imageUrl: string }) => ({ 
+                    title: book.title, 
+                    imageUrl: book.imageUrl, 
+                    level 
+                }))
             );
             setAniBooks(allAniBooks);
         })
         .catch(error => console.error("Error loading the Ani books data: ", error));
-
-        }, []);
+}, []);
 
 
   // Update the filtered books whenever the filter changes
@@ -63,6 +67,9 @@ const BookList: React.FC = () => {
         <ul className='list-disc pl-5 text-slate-100'>
             {filteredBooks.map((book, index) => (
                 <li key={index}>
+                    <div className='flex items-center space-x-4'>
+                        <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover'/>
+                    </div>
                     {book.title} ({book.level})
                 </li>
             ))}
