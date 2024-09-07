@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-//define structure of the book JSON
-interface Book{ 
+// Define structure of the book JSON
+interface Book { 
     title: string;
     level: 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
     imageUrl: string;
@@ -13,8 +13,17 @@ const BookList: React.FC = () => {
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
     const [filter, setFilter] = useState<string>('All');
 
+    // Colors for the buttons for different levels
+    const levelHoverColors: { [key: string]: string } = {
+        N5: 'hover:bg-blue-500 hover:text-white',
+        N4: 'hover:bg-green-500 hover:text-white',
+        N3: 'hover:bg-yellow-500 hover:text-white',
+        N2: 'hover:bg-orange-500 hover:text-white',
+        N1: 'hover:bg-red-500 hover:text-white',
+    };
+
     useEffect(() => {
-        //fetch json data from honto file
+        // Fetch JSON data from honto file
         fetch('http://localhost:8080/api/books')
             .then(response => response.json())
             .then(data => {
@@ -26,7 +35,7 @@ const BookList: React.FC = () => {
             })
             .catch(error => console.error("Error loading the book data: ", error));
 
-        //fetch json data from anionline file
+        // Fetch JSON data from anionline file
         fetch('http://localhost:8080/api/ani-books')
         .then(response => response.json())
         .then(data => {
@@ -40,43 +49,41 @@ const BookList: React.FC = () => {
             setAniBooks(allAniBooks);
         })
         .catch(error => console.error("Error loading the Ani books data: ", error));
-}, []);
+    }, []);
 
-
-  // Update the filtered books whenever the filter changes
-  useEffect(() => {
-    const allFilteredBooks = books.concat(aniBooks);
-    setFilteredBooks(
-        filter === 'All' ? allFilteredBooks : allFilteredBooks.filter(book => book.level === filter)
-    );
-  }, [filter, books, aniBooks]);
+    // Update the filtered books whenever the filter changes
+    useEffect(() => {
+        const allFilteredBooks = books.concat(aniBooks);
+        setFilteredBooks(
+            filter === 'All' ? allFilteredBooks : allFilteredBooks.filter(book => book.level === filter)
+        );
+    }, [filter, books, aniBooks]);
 
     return (
         <div className='container mx-auto p-4'>
-            <div className='mb-4'>
+            <div className='mb-4 flex space-x-2 justify-center'>
                 {['N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
                     <button
                         key={level}
-                        className={`p-2 border ${filter === level ? 'bg-blue-500 text-white' :'bg-white text-black'}`}
+                        className={`p-2 border bg-white text-black ${levelHoverColors[level]}`}
                         onClick={() => setFilter(level)}
                     >
                         {level}
                     </button>
                 ))}
+            </div>
+            <ul className='list-disc pl-5 text-slate-100'>
+                {filteredBooks.map((book, index) => (
+                    <li key={index}>
+                        <div className='flex items-center space-x-4'>
+                            <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover'/>
+                        </div>
+                        {book.title} ({book.level})
+                    </li>
+                ))}
+            </ul>
         </div>
-        <ul className='list-disc pl-5 text-slate-100'>
-            {filteredBooks.map((book, index) => (
-                <li key={index}>
-                    <div className='flex items-center space-x-4'>
-                        <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover'/>
-                    </div>
-                    {book.title} ({book.level})
-                </li>
-            ))}
-        </ul>
-    </div>
     );
 };
 
 export default BookList;
-
