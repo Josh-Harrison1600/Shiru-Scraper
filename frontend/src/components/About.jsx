@@ -38,6 +38,10 @@ export const About = () => {
                     Shiru is a web app that scraps manga from certain websites and uses the OpenAI API to
                     <br></br>
                     determine the JLPT level associated with said manga!
+                    <br></br>
+                    This site was made using Java, React, TypeScript, Tailwind, and SpringBoot.
+                    <br></br>
+                    You can check out the source code <a href="https://github.com/Josh-Harrison1600/Shiru-Scraper" target='_blank' className='text-blue-500 hover:text-white duration-300'>here</a>.
                 </p>
             
             <h2 className="text-3xl font-roboto mt-10" ref={(el) => sectionRefs.current[2] = el}>What is JLPT?</h2>

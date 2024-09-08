@@ -15,11 +15,11 @@ const BookList: React.FC = () => {
 
     // Colors for the buttons for different levels
     const levelHoverColors: { [key: string]: string } = {
-        N5: 'hover:bg-blue-500 hover:text-white',
-        N4: 'hover:bg-green-500 hover:text-white',
-        N3: 'hover:bg-yellow-500 hover:text-white',
-        N2: 'hover:bg-orange-500 hover:text-white',
-        N1: 'hover:bg-red-500 hover:text-white',
+        N5: 'hover:bg-blue-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
+        N4: 'hover:bg-green-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
+        N3: 'hover:bg-yellow-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
+        N2: 'hover:bg-orange-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
+        N1: 'hover:bg-red-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
     };
 
     useEffect(() => {
@@ -72,13 +72,15 @@ const BookList: React.FC = () => {
                     </button>
                 ))}
             </div>
-            <ul className='list-disc pl-5 text-slate-100'>
+            <ul className='list-none pl-5 text-slate-100'>
                 {filteredBooks.map((book, index) => (
                     <li key={index}>
-                        <div className='flex items-center space-x-4'>
-                            <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover'/>
+                        <div className='flex items-center space-x-4 justify-center'>
+                            <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover mb-2'/>
                         </div>
-                        {book.title} ({book.level})
+                        <div className='mb-4'>
+                            {book.title} ({book.level})
+                        </div>
                     </li>
                 ))}
             </ul>
