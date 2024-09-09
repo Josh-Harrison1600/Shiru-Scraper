@@ -13,7 +13,6 @@ import java.util.*;
 import okhttp3.*;
 import io.github.cdimascio.dotenv.Dotenv;
 
-
 //cmd to run scraper
 //mvn clean compile exec:java -D"exec.mainClass=com.example.WebScraper" -D"exec.args=-Dfile.encoding=UTF-8"
 
@@ -26,7 +25,7 @@ public class WebScraper {
     public static void main(String[] args) {
 
         // Create map to categorize books by JLPT level
-        Map<String, List<String>> booksByJLPT = new HashMap<>();
+        Map<String, List<Map<String, String>>> booksByJLPT = new HashMap<>();
         booksByJLPT.put("N5", new ArrayList<>());
         booksByJLPT.put("N4", new ArrayList<>());
         booksByJLPT.put("N3", new ArrayList<>());
@@ -42,10 +41,9 @@ public class WebScraper {
             String searchResultsUrl = baseSearchResultsUrl + "&pgno=" + currentPage;
             System.out.println("Processing page: " + currentPage);
 
-            // Ensure URL is not empty
             if (searchResultsUrl == null || searchResultsUrl.isEmpty()) {
                 System.out.println("The 'url' parameter must not be empty.");
-                return; // Exit if the URL is invalid
+                return;
             }
 
             try {
@@ -60,13 +58,11 @@ public class WebScraper {
                     // Extract URL of the book's details page
                     String bookUrl = bookElement.select("a.dyTitle").attr("href");
 
-                    // Check if the URL is not empty
                     if (bookUrl == null || bookUrl.isEmpty()) {
                         System.out.println("Book URL is empty. Skipping this entry.");
-                        continue; // Skip this iteration if the book URL is empty
+                        continue;
                     }
 
-                    // Prepend the base URL if necessary
                     if (!bookUrl.startsWith("http")) {
                         bookUrl = "https://honto.jp" + bookUrl;
                     }
@@ -79,15 +75,35 @@ public class WebScraper {
                         // Extract the title from the detail page
                         String title = bookDoc.select("h1.stTitle").text();
 
-                        // Debugging print statements
+                        // Extract the image URL from the detail page
+                        String imageUrl = bookElement.select("img.dyImage").attr("data-src");
+                        if(imageUrl == null || imageUrl.isEmpty()) {
+                            imageUrl = bookElement.select("img.dyImage").attr("srcset");
+                        }
+
+                        //if image is not found skip
+                        if (imageUrl == null || imageUrl.isEmpty()) {
+                            System.out.println("Image URL is empty. Skipping this entry.");
+                            continue;
+                        }
+
+                        // Print debugging info
                         System.out.println("Fetched Book URL: " + bookUrl);
                         System.out.println("Fetched Title: " + title);
+                        System.out.println("Fetched Image URL: " + imageUrl);
 
                         // Use OpenAI to determine JLPT level
                         String jlptLevel = determineJLPTLevelUsingOpenAI(title);
 
                         if (jlptLevel != null) {
-                            booksByJLPT.get(jlptLevel).add(title);
+                            // Store the title and image URL
+                            Map<String, String> bookData = new HashMap<>();
+                            bookData.put("title", title);
+                            bookData.put("imageUrl", imageUrl);
+
+                            // Add the book data to the corresponding JLPT level list
+                            booksByJLPT.get(jlptLevel).add(bookData);
+
                             // Save the result to file immediately after fetching
                             saveResultsToFile(booksByJLPT);
                         } else {
@@ -114,7 +130,7 @@ public class WebScraper {
     private static String determineJLPTLevelUsingOpenAI(String title) {
         // Define the prompt based on the title
         String prompt = "You are a language model that specializes in translating Japanese manga titles to their JLPT difficulty level. determine its JLPT level. Only respond with one of the following levels: 'N5', 'N4', 'N3', 'N2', 'N1'. Ensure you ignore text that isn't related to the title such as 【電子書籍限定書き下ろしSS付き】Here is the title: " + title;
-        
+
         try {
             String response = callOpenAIAPI(prompt);
             if (response != null && response.contains("N")) {
@@ -139,7 +155,7 @@ public class WebScraper {
             .url(url)
             .post(RequestBody.create(requestBody.toString(), JSON))
             .addHeader("Authorization", "Bearer " + OPENAI_API_KEY)
-            .addHeader("Content-Type", "application/json") // Added Content-Type header
+            .addHeader("Content-Type", "application/json")
             .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -154,15 +170,34 @@ public class WebScraper {
         return null;
     }
 
-    // Function to save results to a file
-    private static void saveResultsToFile(Map<String, List<String>> booksByJLPT) {
-        JSONObject jsonObject = new JSONObject(booksByJLPT);
+// Function to save results to a file
+private static void saveResultsToFile(Map<String, List<Map<String, String>>> booksByJLPT) {
+    // The outer JSONObject holds the JLPT levels as keys and lists of books as values
+    JSONObject jsonObject = new JSONObject();
 
-        try (FileWriter file = new FileWriter("books_by_jlpt.json", StandardCharsets.UTF_8, false)) {
-            file.write(jsonObject.toString(4));
-            System.out.println("Results saved to books_by_jlpt.json");
-        } catch (IOException e) {
-            System.out.println("Error writing to JSON file: " + e.getMessage());
+    for (Map.Entry<String, List<Map<String, String>>> entry : booksByJLPT.entrySet()) {
+        String jlptLevel = entry.getKey();
+        List<Map<String, String>> books = entry.getValue();
+
+        // Create a JSON array for the books
+        org.json.JSONArray jsonArray = new org.json.JSONArray();
+
+        for (Map<String, String> book : books) {
+            JSONObject bookJson = new JSONObject();
+            bookJson.put("title", book.get("title"));
+            bookJson.put("imageUrl", book.get("imageUrl"));
+            jsonArray.put(bookJson);
         }
+
+        // Put the JSON array under the corresponding JLPT level
+        jsonObject.put(jlptLevel, jsonArray);
     }
+
+    try (FileWriter file = new FileWriter("books_by_jlpt.json", StandardCharsets.UTF_8, false)) {
+        file.write(jsonObject.toString(4)); // Pretty print with indentation
+        System.out.println("Results saved to books_by_jlpt.json");
+    } catch (IOException e) {
+        System.out.println("Error writing to JSON file: " + e.getMessage());
+    }
+}
 }

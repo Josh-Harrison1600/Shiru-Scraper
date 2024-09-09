@@ -14,12 +14,20 @@ const BookList: React.FC = () => {
     const [filter, setFilter] = useState<string>('All');
 
     // Colors for the buttons for different levels
+    const levelColors: { [key: string]: string } = {
+        N5: 'bg-blue-500 text-white',
+        N4: 'bg-green-500 text-white',
+        N3: 'bg-yellow-500 text-white',
+        N2: 'bg-orange-500 text-white',
+        N1: 'bg-red-500 text-white',
+    };
+
     const levelHoverColors: { [key: string]: string } = {
-        N5: 'hover:bg-blue-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
-        N4: 'hover:bg-green-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
-        N3: 'hover:bg-yellow-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
-        N2: 'hover:bg-orange-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
-        N1: 'hover:bg-red-500 duration-300 hover:text-white transition ease-in-out delay-50 hover:-translate-y-1',
+        N5: 'hover:bg-blue-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
+        N4: 'hover:bg-green-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
+        N3: 'hover:bg-yellow-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
+        N2: 'hover:bg-orange-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
+        N1: 'hover:bg-red-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
     };
 
     useEffect(() => {
@@ -28,7 +36,11 @@ const BookList: React.FC = () => {
             .then(response => response.json())
             .then(data => {
                 const allBooks = Object.keys(data).flatMap(level =>
-                    data[level].map((title: string) => ({ title, level }))
+                    data[level].map((book: { title: string, imageUrl: string }) => ({ 
+                        title: book.title,
+                        level,
+                        imageUrl: book.imageUrl,
+                    }))
                 );
                 setBooks(allBooks);
                 setFilteredBooks(allBooks);
@@ -65,7 +77,9 @@ const BookList: React.FC = () => {
                 {['N5', 'N4', 'N3', 'N2', 'N1'].map((level) => (
                     <button
                         key={level}
-                        className={`p-2 border bg-white text-black ${levelHoverColors[level]}`}
+                        className={`p-2 border ${
+                            filter === level ? levelColors[level] : 'bg-white text-black'
+                        } ${levelHoverColors[level]}`}
                         onClick={() => setFilter(level)}
                     >
                         {level}

@@ -134,7 +134,7 @@
             <version>3.0.0</version>
             <executions>
                 <!-- Execution for WebScraper -->
-                <!-- <execution>
+                <execution>
                     <id>run-web-scraper</id>
                     <goals>
                         <goal>java</goal>
@@ -145,9 +145,9 @@
                             <argument>-Dfile.encoding=UTF-8</argument>
                         </arguments>
                     </configuration>
-                </execution> -->
+                </execution>
                 <!-- Execution for RakutenScraper -->
-                <execution>
+                <!-- <execution>
                     <id>run-ani-scraper</id>
                     <goals>
                         <goal>java</goal>
@@ -158,7 +158,7 @@
                             <argument>-Dfile.encoding=UTF-8</argument>
                         </arguments>
                     </configuration>
-                </execution>
+                </execution> -->
             </executions>
       </plugin>
     </plugins>
