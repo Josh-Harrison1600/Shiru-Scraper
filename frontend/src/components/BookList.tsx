@@ -12,6 +12,8 @@ const BookList: React.FC = () => {
     const [aniBooks, setAniBooks] = useState<Book[]>([]);
     const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
     const [filter, setFilter] = useState<string>('All');
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const booksPerPage = 10;
 
     // Colors for the buttons for different levels
     const levelColors: { [key: string]: string } = {
@@ -27,7 +29,7 @@ const BookList: React.FC = () => {
         N4: 'hover:bg-green-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
         N3: 'hover:bg-yellow-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
         N2: 'hover:bg-orange-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
-        N1: 'hover:bg-red-500 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
+        N1: 'hover:bg-red-700 hover:text-white duration-300 transition ease-in-out delay-50 hover:-translate-y-1',
     };
 
     useEffect(() => {
@@ -69,7 +71,20 @@ const BookList: React.FC = () => {
         setFilteredBooks(
             filter === 'All' ? allFilteredBooks : allFilteredBooks.filter(book => book.level === filter)
         );
+        setCurrentPage(1); //resets to first page when filter changes
     }, [filter, books, aniBooks]);
+
+    //calculate total pages
+    const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+
+    //slice books to only show books for the current page
+    const currentBooks = filteredBooks.slice(
+        (currentPage - 1) * booksPerPage,
+        currentPage * booksPerPage
+    );
+
+    //pagination controls
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
     return (
         <div className='container mx-auto p-4'>
@@ -78,7 +93,7 @@ const BookList: React.FC = () => {
                     <button
                         key={level}
                         className={`p-2 border ${
-                            filter === level ? levelColors[level] : 'bg-white text-black'
+                            filter === level ? levelColors[level] : 'bg-black text-white'
                         } ${levelHoverColors[level]}`}
                         onClick={() => setFilter(level)}
                     >
@@ -86,8 +101,9 @@ const BookList: React.FC = () => {
                     </button>
                 ))}
             </div>
+
             <ul className='list-none pl-5 text-slate-100'>
-                {filteredBooks.map((book, index) => (
+                {currentBooks.map((book, index) => (
                     <li key={index}>
                         <div className='flex items-center space-x-4 justify-center'>
                             <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover mb-2'/>
@@ -98,8 +114,35 @@ const BookList: React.FC = () => {
                     </li>
                 ))}
             </ul>
+
+            {/* Pagination controls */}
+            <div className='flex justify-center mt-6'>
+                <button
+                    className='px-4 py-2 border mr-2 text-white bg-black hover:bg-slate-50 hover:text-black duration-400 transition ease-in-out delay-50'
+                    onClick={() => paginate(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </button>
+                {[...Array(totalPages)].map((_, index) => (
+                <button
+                    key={index + 1}
+                    className={`px-4 py-2 border mx-1 
+                        ${currentPage === index + 1 ? 'bg-slate-50 text-black' : 'bg-black text-white hover:bg-slate-50 hover:text-black duration-400 transition ease-in-out delay-50'}`}
+                    onClick={() => paginate(index + 1)}
+                >
+                    {index + 1}
+                </button>
+                ))}
+                <button
+                    className='px-4 py-2 border ml-2 text-white bg-black hover:bg-slate-50 hover:text-black duration-400 transition ease-in-out delay-50'
+                    onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </button>
+            </div>
         </div>
     );
 };
-
 export default BookList;
