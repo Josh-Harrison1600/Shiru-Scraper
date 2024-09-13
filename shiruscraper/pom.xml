@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" 
+<project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.1.2</version>
+    <relativePath/> <!-- Lookup parent from Maven Central -->
+  </parent>
 
   <groupId>com.example</groupId>
   <artifactId>shiruscraper</artifactId>
@@ -11,19 +18,17 @@
   <name>shiruscraper</name>
   <url>http://www.example.com</url>
 
-
-<repositories>
-    <repository>
-        <id>central</id>
-        <url>https://repo.maven.apache.org/maven2</url>
-    </repository>
-</repositories>
-
   <properties>
+    <java.version>19</java.version> <!-- Updated to Java 19 -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>19</maven.compiler.source> <!-- Updated to Java 19 was 1.8 -->
-    <maven.compiler.target>19</maven.compiler.target> <!-- Updated to Java 19  was 1.8-->
   </properties>
+
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <!-- JUnit dependency for testing -->
@@ -34,46 +39,53 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Selenium dependency for web scraping -->
     <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.1.2</version>
-        <type>pom</type>
-        <scope>import</scope>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-java</artifactId>
+      <version>4.1.0</version>
     </dependency>
 
     <!-- Spring Boot Starter Web dependency -->
     <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-        <version>3.1.2</version> 
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
     <!-- Jackson Databind for JSON processing -->
     <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>2.15.2</version> 
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.2</version>
     </dependency>
 
+    <!-- dotenv dependency -->
     <dependency>
-        <groupId>io.github.cdimascio</groupId>
-        <artifactId>java-dotenv</artifactId>
-        <version>5.2.2</version>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>java-dotenv</artifactId>
+      <version>5.2.2</version>
     </dependency>
 
-  <dependency>
-  <!-- handles http req -->
+    <!-- OkHttp dependency for HTTP requests -->
+    <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>4.9.3</version>
-  </dependency>
+    </dependency>
 
     <!-- Jsoup dependency for web scraping -->
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
       <version>1.15.3</version>
+    </dependency>
+
+
+    <!-- Logback Classic for logging -->
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.4.11</version> <!-- Latest stable version -->
     </dependency>
 
     <!-- org.json dependency for handling JSON -->
@@ -86,80 +98,86 @@
 
   <build>
     <plugins>
-            <!-- Spring Boot Maven Plugin -->
-    <plugin>
+      <!-- Spring Boot Maven Plugin -->
+      <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-    </plugin>
+      </plugin>
+
+      <!-- Maven Clean Plugin -->
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
         <version>3.1.0</version>
       </plugin>
+
+      <!-- Maven Resources Plugin -->
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.0.2</version>
       </plugin>
+
+      <!-- Maven Compiler Plugin -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
+        <configuration>
+          <source>19</source>
+          <target>19</target>
+        </configuration>
       </plugin>
+
+      <!-- Maven Surefire Plugin for testing -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.1</version>
       </plugin>
+
+      <!-- Maven Exec Plugin for running specific scrapers -->
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.0.2</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-install-plugin</artifactId>
-        <version>2.5.2</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.7.1</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
         <version>3.0.0</version>
-      </plugin>
-      <!-- exec-maven-plugin -->
-      <plugin>
-                   <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-                <!-- Execution for WebScraper -->
-                <execution>
-                    <id>run-web-scraper</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>com.example.WebScraper</mainClass>
-                        <arguments>
-                            <argument>-Dfile.encoding=UTF-8</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <!-- Execution for RakutenScraper -->
-                <!-- <execution>
-                    <id>run-ani-scraper</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>com.example.AniOnline</mainClass>
-                        <arguments>
-                            <argument>-Dfile.encoding=UTF-8</argument>
-                        </arguments>
-                    </configuration>
-                </execution> -->
-            </executions>
+        <executions>
+          <!-- Execution for WebScraper -->
+          <!-- <execution>
+            <id>run-web-scraper</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.example.WebScraper</mainClass>
+              <arguments>
+                <argument>-Dfile.encoding=UTF-8</argument>
+              </arguments>
+            </configuration>
+          </execution> -->
+          <!-- Execution for Ehonnavi Scraper -->
+          <execution>
+            <id>run-ehonnavi-scraper</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.example.EhonnaviScraper</mainClass>
+              <arguments>
+                <argument>-Dfile.encoding=UTF-8</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <!-- Execution for RakutenScraper -->
+          <!-- <execution>
+            <id>run-ani-scraper</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.example.AniOnline</mainClass>
+              <arguments>
+                <argument>-Dfile.encoding=UTF-8</argument>
+              </arguments>
+            </configuration>
+          </execution> -->
+        </executions>
       </plugin>
     </plugins>
   </build>

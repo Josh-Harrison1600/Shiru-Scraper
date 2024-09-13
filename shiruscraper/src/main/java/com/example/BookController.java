@@ -42,5 +42,18 @@ public class BookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading the new JSON file: " + e.getMessage());
         }
     }
+
+    @GetMapping("/api/ehonnavi-books")
+    public ResponseEntity<String> getEhonnaviBooks() {
+        try {
+            // Point to the new JSON file location
+            String jsonPath = "C:/VSCProjects/ReactProjects/shiruscraper/shiruscraper/N5Books.json";
+            String content = new String(Files.readAllBytes(Paths.get(jsonPath)), StandardCharsets.UTF_8);
+            return ResponseEntity.ok(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error reading the new JSON file: " + e.getMessage());
+        }
+    }
 }
 

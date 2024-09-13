@@ -47,7 +47,7 @@ public class WebScraper {
         Map<String, Map<String, String>> bookDataMap = new HashMap<>(); // Maps titles to book data (title and image)
 
         // Go through all pages
-        int totalPages = 1;
+        int totalPages = 4;
         for (int currentPage = 1; currentPage <= totalPages; currentPage++) {
             String searchResultsUrl = baseSearchResultsUrl + "&pgno=" + currentPage;
             System.out.println("Processing page: " + currentPage);
@@ -132,34 +132,45 @@ public class WebScraper {
                 String jlptLevel = entry.getValue();
 
                 boolean matched = false;
+                String closestMatch = null;
+                int minDistance = Integer.MAX_VALUE;
 
                 // Iterate through the fetched book titles and attempt to match them
                 for (String fetchedTitle : bookDataMap.keySet()) {
                     String fetchedTrimmedTitle = normalizeTitle(fetchedTitle.trim()); // Title from website
 
-                    // Check if titles match or use Levenshtein distance for approximate matching
-                    if (isTitlesSimilar(openAITitle, fetchedTrimmedTitle)) {
-                        // Get the book data from the map
+                    // Calculate Levenshtein distance between OpenAI title and fetched title
+                    int distance = levenshteinDistance(openAITitle, fetchedTrimmedTitle);
+                    int threshold = calculateAdaptiveThreshold(fetchedTrimmedTitle); // Adaptive threshold
+
+                    if (distance < threshold) {
+                        // If below the threshold, we found a good match
+                        matched = true;
                         Map<String, String> bookData = bookDataMap.get(fetchedTitle);
 
                         // Move the book to the correct JLPT level
-                        if (booksByJLPT.containsKey(jlptLevel)) {
-                            booksByJLPT.get(jlptLevel).add(bookData);
-                            System.out.println("Matched and moved book: " + fetchedTitle + " to JLPT level " + jlptLevel);
-                        } else {
-                            System.out.println("Unknown JLPT level: " + jlptLevel);
-                        }
+                        booksByJLPT.get(jlptLevel).add(bookData);
+                        System.out.println("Matched and moved book: " + fetchedTitle + " to JLPT level " + jlptLevel);
 
                         // Remove the book from "N/A"
                         booksByJLPT.get("N/A").remove(bookData);
-                        matched = true;
-                        break; // Break since we found the match
+                        break;
+                    }
+
+                    // Record the closest match if nothing below the threshold is found
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestMatch = fetchedTitle;
                     }
                 }
 
-                // Log if no match was found
-                if (!matched) {
-                    System.out.println("No match found for title: " + openAITitle);
+                // If no match was found, use the closest match
+                if (!matched && closestMatch != null) {
+                    System.out.println("No perfect match found for title: " + openAITitle + ". Using closest match: " + closestMatch);
+
+                    Map<String, String> bookData = bookDataMap.get(closestMatch);
+                    booksByJLPT.get(jlptLevel).add(bookData);
+                    booksByJLPT.get("N/A").remove(bookData);
                 }
             }
 
@@ -168,17 +179,18 @@ public class WebScraper {
         }
     }
 
+    // Adaptive threshold based on title length for Levenshtein distance
+    private static int calculateAdaptiveThreshold(String title) {
+        int length = title.length();
+        if (length < 10) return 2; // Short titles can have a small threshold
+        if (length < 20) return 3; // Medium titles a bit larger
+        return 5; // Longer titles can have a higher tolerance
+    }
+
     // Normalize titles by removing special characters and spaces
     private static String normalizeTitle(String title) {
         title = Normalizer.normalize(title, Normalizer.Form.NFKC);
         return title.replaceAll("[^\\p{L}\\p{N}]+", "").toLowerCase();
-    }
-
-    // Levenshtein distance method for approximate title matching
-    private static boolean isTitlesSimilar(String title1, String title2) {
-        int distance = levenshteinDistance(title1, title2);
-        // If distance is less than a threshold (e.g., 5 characters), consider them similar
-        return distance < 5;
     }
 
     // Function to calculate Levenshtein distance
