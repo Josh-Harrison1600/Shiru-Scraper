@@ -38,6 +38,7 @@ public class EhonnaviScraper {
                     // Extract title
                     Element titleElement = bookElement.selectFirst("h3.m_bold.c_mb10 a");
                     String title = titleElement != null ? titleElement.text() : "";
+                    String bookUrl = titleElement != null ? titleElement.attr("href") : "";
 
                     // Extract image URL (inside <img> tag with class 'm_booklist-img')
                     Element imgElement = bookElement.selectFirst("div.m_booklist_img img");
@@ -47,9 +48,12 @@ public class EhonnaviScraper {
                     if (!imageUrl.startsWith("http") && !imageUrl.isEmpty()) {
                         imageUrl = "https://www.ehonnavi.net/" + imageUrl;
                     }
+                    if (!bookUrl.startsWith("http") && !bookUrl.isEmpty()) {
+                        bookUrl = "https://www.ehonnavi.net/" + bookUrl;
+                    }
 
                     // Skip if the title or image URL is empty
-                    if (title.isEmpty() || imageUrl.isEmpty()) {
+                    if (title.isEmpty() || imageUrl.isEmpty() || bookUrl.isEmpty()) {
                         System.out.println("Missing title or image URL. Skipping.");
                         continue;
                     }
@@ -62,6 +66,7 @@ public class EhonnaviScraper {
                     Map<String, String> bookData = new HashMap<>();
                     bookData.put("title", title);
                     bookData.put("imageUrl", imageUrl);
+                    bookData.put("bookUrl", bookUrl);
 
                     // Add the book data to the N5 list
                     n5Books.add(bookData);

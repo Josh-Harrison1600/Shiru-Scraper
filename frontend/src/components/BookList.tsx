@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import 'animate.css';
 
 // Define structure of the book JSON
 interface Book { 
     title: string;
     level: 'N5' | 'N4' | 'N3' | 'N2' | 'N1' | 'N/A';
     imageUrl: string;
+    bookUrl: string;
 }
 
 const BookList: React.FC = () => { 
@@ -55,9 +57,10 @@ const BookList: React.FC = () => {
         fetch('http://localhost:8080/api/ehonnavi-books')
             .then(response => response.json())
             .then(data => {
-                const ehonnaviBooks = data.N5.map((book: { title: string, imageUrl: string }) => ({
+                const ehonnaviBooks = data.N5.map((book: { title: string, imageUrl: string, bookUrl: string }) => ({
                     title: book.title,
                     imageUrl: book.imageUrl,
+                    bookUrl: book.bookUrl,
                     level: 'N5' 
                 }));
 
@@ -171,21 +174,24 @@ const BookList: React.FC = () => {
                 ))}
             </div>
 
-            <ul className='list-none pl-5 text-slate-100'>
-                {currentBooks.map((book, index) => (
-                    <li key={index}>
-                        <div className='flex items-center space-x-4 justify-center'>
-                            <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover mb-2'/>
-                        </div>
-                        <div className='mb-4'>
-                            {book.title} ({book.level})
-                        </div>
-                    </li>
-                ))}
-            </ul>
+            {currentBooks.map((book, index) => (
+                <div key={index} className="mb-6 animate__animated animate__fadeInUp"> {/* Added div wrapper */}
+                    <div className='flex items-center space-x-4 justify-center'>
+                        <img src={book.imageUrl} alt={book.title} className='w-24 h-24 object-cover mb-2'/>
+                    </div>
+                    <div className='mb-4'>
+                        <a href={book.bookUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                            {book.title}
+                        </a> ({book.level})
+                    </div>
+                </div>
+            ))}
+
+
+
 
             {/* Pagination controls */}
-            <div className='flex justify-center mt-6'>
+            <div className='flex justify-center mt-6 animate__animated animate__fadeInUp'>
                 <button
                     className='px-4 py-2 border mr-2 text-white bg-black hover:bg-slate-50 hover:text-black duration-400 transition ease-in-out delay-50'
                     onClick={() => paginate(Math.max(currentPage - 1, 1))}

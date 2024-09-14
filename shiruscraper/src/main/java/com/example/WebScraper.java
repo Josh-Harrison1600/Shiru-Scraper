@@ -15,6 +15,10 @@ import okhttp3.*;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.util.concurrent.TimeUnit;
 
+
+//cmd to run scraper
+//mvn clean compile exec:java -D"exec.mainClass=com.example.WebScraper" -D"exec.args=-Dfile.encoding=UTF-8"
+
 public class WebScraper {
 
     private static final Dotenv dotenv = Dotenv.configure().directory("../").load();
