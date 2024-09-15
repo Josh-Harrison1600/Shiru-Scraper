@@ -41,10 +41,11 @@ const BookList: React.FC = () => {
             .then(response => response.json())
             .then(data => {
                 const allBooks = Object.keys(data).flatMap(level =>
-                    data[level].map((book: { title: string, imageUrl: string }) => ({ 
+                    data[level].map((book: { title: string, imageUrl: string, bookUrl: string }) => ({ 
                         title: book.title,
                         level,
                         imageUrl: book.imageUrl,
+                        bookUrl: book.bookUrl,
                     }))
                     .filter((book : Book) => book.level !== 'N/A')
                 );

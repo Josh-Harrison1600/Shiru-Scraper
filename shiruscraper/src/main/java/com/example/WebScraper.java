@@ -48,10 +48,10 @@ public class WebScraper {
 
         // List to collect book titles for batch processing
         List<String> bookTitles = new ArrayList<>();
-        Map<String, Map<String, String>> bookDataMap = new HashMap<>(); // Maps titles to book data (title and image)
+        Map<String, Map<String, String>> bookDataMap = new HashMap<>(); // Maps titles to book data (title, image, and URL)
 
         // Go through all pages
-        int totalPages = 4;
+        int totalPages = 7;
         for (int currentPage = 1; currentPage <= totalPages; currentPage++) {
             String searchResultsUrl = baseSearchResultsUrl + "&pgno=" + currentPage;
             System.out.println("Processing page: " + currentPage);
@@ -70,6 +70,7 @@ public class WebScraper {
                 for (Element bookElement : bookElements) {
                     String bookUrl = bookElement.select("a.dyTitle").attr("href");
 
+                    // Add base URL if needed
                     if (bookUrl == null || bookUrl.isEmpty()) {
                         System.out.println("Book URL is empty. Skipping this entry.");
                         continue;
@@ -106,10 +107,11 @@ public class WebScraper {
                         // Add title to the list for batch processing
                         bookTitles.add(title);
 
-                        // Store the title and image URL for later use
+                        // Store the title, image URL, and book URL for later use
                         Map<String, String> bookData = new HashMap<>();
                         bookData.put("title", title);
                         bookData.put("imageUrl", imageUrl);
+                        bookData.put("bookUrl", bookUrl);  // Store the book URL
                         bookDataMap.put(title, bookData); // Store the data by title
 
                         // Temporarily store the book under "N/A" category
@@ -126,14 +128,20 @@ public class WebScraper {
 
         // Process the batch of titles if not empty
         if (!bookTitles.isEmpty()) {
-            // Send batch titles to OpenAI API for JLPT classification
-            Map<String, String> titleToJLPTMap = determineJLPTLevelUsingOpenAI(bookTitles);
+            // Process titles in batches to avoid large API requests and include delay
+            Map<String, String> titleToJLPTMap = batchProcessJLPTClassification(bookTitles);
             System.out.println("JLPT Levels: " + titleToJLPTMap);
 
-            // Map each book to its correct JLPT level
+           // Map each book to its correct JLPT level
             for (Map.Entry<String, String> entry : titleToJLPTMap.entrySet()) {
-                String openAITitle = normalizeTitle(entry.getKey().trim()); // Title from OpenAI response
+                String openAITitle = entry.getKey(); // Title from OpenAI response
                 String jlptLevel = entry.getValue();
+
+                // Ensure the JLPT level exists in the booksByJLPT map
+                if (!booksByJLPT.containsKey(jlptLevel)) {
+                    System.out.println("Unknown JLPT level: " + jlptLevel + ". Defaulting to N/A.");
+                    jlptLevel = "N/A"; // Default to "N/A" if the level is not recognized
+                }
 
                 boolean matched = false;
                 String closestMatch = null;
@@ -141,11 +149,11 @@ public class WebScraper {
 
                 // Iterate through the fetched book titles and attempt to match them
                 for (String fetchedTitle : bookDataMap.keySet()) {
-                    String fetchedTrimmedTitle = normalizeTitle(fetchedTitle.trim()); // Title from website
+                    String normalizedFetchedTitle = normalizeTitle(fetchedTitle);
 
                     // Calculate Levenshtein distance between OpenAI title and fetched title
-                    int distance = levenshteinDistance(openAITitle, fetchedTrimmedTitle);
-                    int threshold = calculateAdaptiveThreshold(fetchedTrimmedTitle); // Adaptive threshold
+                    int distance = levenshteinDistance(openAITitle, normalizedFetchedTitle);
+                    int threshold = calculateAdaptiveThreshold(normalizedFetchedTitle); // Adaptive threshold
 
                     if (distance < threshold) {
                         // If below the threshold, we found a good match
@@ -178,23 +186,39 @@ public class WebScraper {
                 }
             }
 
+
             // Save results after JLPT level determination
             saveResultsToFile(booksByJLPT);
         }
     }
 
-    // Adaptive threshold based on title length for Levenshtein distance
-    private static int calculateAdaptiveThreshold(String title) {
-        int length = title.length();
-        if (length < 10) return 2; // Short titles can have a small threshold
-        if (length < 20) return 3; // Medium titles a bit larger
-        return 5; // Longer titles can have a higher tolerance
+    // Function to batch process titles for OpenAI classification with a delay between batches
+    private static Map<String, String> batchProcessJLPTClassification(List<String> bookTitles) {
+        Map<String, String> titleToJLPTMap = new HashMap<>();
+        int batchSize = 20; // Limit each batch to 20 titles to avoid token limits or large responses
+        int totalTitles = bookTitles.size();
+
+        for (int i = 0; i < totalTitles; i += batchSize) {
+            List<String> batch = bookTitles.subList(i, Math.min(i + batchSize, totalTitles));
+            Map<String, String> batchResults = determineJLPTLevelUsingOpenAI(batch);
+            titleToJLPTMap.putAll(batchResults); // Merge batch results into the overall map
+
+            // Introduce a 20-second delay between batches to respect OpenAI API rate limits
+            try {
+                System.out.println("Waiting for 20 seconds before next batch...");
+                Thread.sleep(20000);  // 20 seconds delay between batches
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted during delay: " + e.getMessage());
+            }
+        }
+
+        return titleToJLPTMap;
     }
 
-    // Normalize titles by removing special characters and spaces
+    // Normalize titles by removing special characters and trimming whitespace
     private static String normalizeTitle(String title) {
         title = Normalizer.normalize(title, Normalizer.Form.NFKC);
-        return title.replaceAll("[^\\p{L}\\p{N}]+", "").toLowerCase();
+        return title.replaceAll("[^\\p{L}\\p{N}]+", "").toLowerCase().trim();
     }
 
     // Function to calculate Levenshtein distance
@@ -217,6 +241,14 @@ public class WebScraper {
         return dp[s1.length()][s2.length()];
     }
 
+    // Adaptive threshold based on title length for Levenshtein distance
+    private static int calculateAdaptiveThreshold(String title) {
+        int length = title.length();
+        if (length < 10) return 2; // Short titles can have a small threshold
+        if (length < 20) return 3; // Medium titles a bit larger
+        return 5; // Longer titles can have a higher tolerance
+    }
+
     // Function to get OpenAI to determine JLPT level for a batch of titles
     private static Map<String, String> determineJLPTLevelUsingOpenAI(List<String> titles) {
         Map<String, String> titleToJLPTMap = new HashMap<>();
@@ -229,13 +261,12 @@ public class WebScraper {
                 // Split the response into lines and parse each line
                 String[] lines = response.split("\n");
                 for (String line : lines) {
-                    // Example line: "1. <title> - N2"
                     if (line.contains("-")) {
                         String[] parts = line.split(" - ");
                         if (parts.length == 2) {
                             String title = parts[0].trim().replaceFirst("\\d+\\. ", ""); // Removing the leading number
                             String jlptLevel = parts[1].trim(); // Extracting the JLPT level (e.g., N2)
-                            titleToJLPTMap.put(title, jlptLevel);
+                            titleToJLPTMap.put(normalizeTitle(title), jlptLevel); // Store normalized title
                         }
                     }
                 }
@@ -291,6 +322,7 @@ public class WebScraper {
                 JSONObject bookJson = new JSONObject();
                 bookJson.put("title", book.get("title"));
                 bookJson.put("imageUrl", book.get("imageUrl"));
+                bookJson.put("bookUrl", book.get("bookUrl"));  // Add the book URL to the JSON output
                 jsonArray.put(bookJson);
             }
 
