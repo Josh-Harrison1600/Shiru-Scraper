@@ -19,7 +19,7 @@
   <url>http://www.example.com</url>
 
   <properties>
-    <java.version>19</java.version> <!-- Updated to Java 19 -->
+    <java.version>17</java.version> <!-- downgraded to Java 17 -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -121,8 +121,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
         <configuration>
-          <source>19</source>
-          <target>19</target>
+          <source>17</source> <!--downgraded to 17, was 19-->
+          <target>17</target> <!--downgraded to 17, was 19-->
         </configuration>
       </plugin>
 
