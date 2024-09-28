@@ -119,7 +119,7 @@
       <!-- Maven Compiler Plugin -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.10.1</version> <!--was 3.8.0-->
         <configuration>
           <source>17</source> <!--downgraded to 17, was 19-->
           <target>17</target> <!--downgraded to 17, was 19-->
