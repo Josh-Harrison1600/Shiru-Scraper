@@ -1,4 +1,5 @@
 Shiru is an application that uses web scraping to get Japanese manga and then assings it reading difficulty based on OpenAI's API using batch requests.
+This is useful for Japanese learners who are looking for manga targeted towards their current reading level.
 
 ![1](https://github.com/user-attachments/assets/982f1360-5fc5-4f01-8003-3a73c74de852)
 
